@@ -37,9 +37,10 @@ const initFirebase = () => {
 
 const realDb = initFirebase();
 
+// ข้อมูลตัวอย่าง (Seed Data)
 const SEED_DEPARTMENTS = [
-  { name: 'ฝ่ายกฎหมาย (กม.)' }, { name: 'ฝ่ายการบัญชี (บช.)' }, { name: 'ฝ่ายกำกับการปฏิบัติงาน (กก.)' },
-  { name: 'ฝ่ายกิจกรรมเพื่อสังคม (กส.)' }, { name: 'ฝ่ายเงินฝากและพันธมิตร (งพ.)' }, { name: 'ฝ่ายสื่อสารองค์กร (สอ.)' }, { name: 'สำนักกรรมการผู้จัดการ (สก)' }
+  { id: '1', name: 'ฝ่ายกฎหมาย (กม.)' }, { id: '2', name: 'ฝ่ายการบัญชี (บช.)' }, { id: '3', name: 'ฝ่ายกำกับการปฏิบัติงาน (กก.)' },
+  { id: '4', name: 'ฝ่ายกิจกรรมเพื่อสังคม (กส.)' }, { id: '5', name: 'ฝ่ายเงินฝากและพันธมิตร (งพ.)' }, { id: '44', name: 'ฝ่ายสื่อสารองค์กร (สอ.)' }, { id: '56', name: 'สำนักกรรมการผู้จัดการ (สก)' }
 ];
 const SEED_GROUPS = [
   { id: '1', name: 'เจ้าของ' }, { id: '2', name: 'หน่วยงานกำกับดูแล' }, { id: '3', name: 'คณะกรรมการธนาคาร' },
@@ -53,9 +54,9 @@ const SEED_STAKEHOLDERS = [
 ];
 
 const INITIAL_GLOBAL_TARGETS = { overall: 90.00, operational: 85.00, communication: 90.00, transparency: 95.00, relationship: 90.00, dissatisfaction: 5.00, loyalty: 85.00, engagement: 85.00, image: 90.00, channel: 90.00, levelsMethods: 85.00 };
-const INITIAL_USERS = [
+const SEED_USERS = [
     { id: 'u1', name: 'Admin Central', email: 'admin@ghb.co.th', role: 'admin', deptId: null, status: 'Active' },
-    { id: 'u2', name: 'เจ้าหน้าที่ สอ.', email: 'comm@ghb.co.th', role: 'user', deptId: 44, status: 'Active' }
+    { id: 'u2', name: 'เจ้าหน้าที่ สอ.', email: 'comm@ghb.co.th', role: 'user', deptId: '44', status: 'Active' }
 ];
 
 const THAI_LABELS = { overall: 'ความพึงพอใจโดยรวม', operational: 'ด้านปฏิบัติงาน', communication: 'การสื่อสาร', transparency: 'ความโปร่งใส', relationship: 'ความสัมพันธ์', dissatisfaction: 'ความไม่พึงพอใจ', loyalty: 'ความภักดี', engagement: 'ความผูกพัน', image: 'ภาพลักษณ์', channel: 'ช่องทางสื่อสาร', levelsMethods: 'ระดับและรูปแบบ' };
@@ -78,9 +79,9 @@ const InputTarget = ({ label, value, onChange }) => (
 
 const InputScoreWithTarget = ({ label, actual, target, onChange, inverse }) => (
     <div className="flex justify-between items-center p-2 rounded hover:bg-gray-50">
-        <span className="text-sm font-medium text-gray-700 capitalize flex-1">{label}</span>
+        <span className="text-sm font-medium text-gray-700 capitalize flex-1">{THAI_LABELS[label] || label}</span>
         <div className="flex items-center gap-6">
-            <div className="text-right"><span className="block text-[10px] text-gray-400">Target</span><span className="text-sm font-medium text-gray-500">{Number(target).toFixed(2)}</span></div>
+            <div className="text-right"><span className="block text-[10px] text-gray-400">Target</span><span className="text-sm font-medium text-gray-500">{target?.toFixed(2)}</span></div>
             <div><span className="block text-[10px] text-gray-400 mb-1">Actual</span><input type="number" step="0.01" className={`w-24 text-right p-1 border rounded outline-none ${ (parseFloat(actual) || 0) >= target ? (inverse ? 'border-red-300 bg-red-50 text-red-700' : 'border-green-300 bg-green-50 text-green-700') : (inverse ? 'border-green-300 bg-green-50 text-green-700' : 'border-red-300 bg-red-50 text-red-700') } focus:ring-1 focus:ring-blue-500`} value={actual} onChange={e => onChange(e.target.value)} /></div>
         </div>
     </div>
@@ -239,6 +240,16 @@ const MasterDataView = ({ db, departments, stakeholderGroups, stakeholders, hand
                     <h2 className="text-2xl font-bold text-gray-800">ภาพรวมข้อมูลหลัก (Master Data)</h2>
                     <button onClick={seedDatabase} className="text-xs bg-gray-200 px-3 py-2 rounded hover:bg-gray-300 flex items-center gap-1 transition-colors"><Database size={14}/> ข้อมูลเริ่มต้น</button>
                 </div>
+                
+                {departments.length === 0 && stakeholderGroups.length === 0 && stakeholders.length === 0 && (
+                    <div className="bg-orange-50 border border-orange-200 text-orange-800 p-8 rounded-lg text-center">
+                        <AlertTriangle className="mx-auto mb-2" size={32}/>
+                        <h3 className="font-bold text-lg">ยังไม่มีข้อมูลในระบบ</h3>
+                        <p className="text-sm mb-4">คุณสามารถเพิ่มข้อมูลเอง หรือกดปุ่ม "ข้อมูลเริ่มต้น" ด้านบนเพื่อโหลดข้อมูลตัวอย่างได้เลยครับ</p>
+                        <button onClick={seedDatabase} className="bg-orange-600 text-white px-6 py-2 rounded font-bold hover:bg-orange-700">ติดตั้งข้อมูลเริ่มต้นเดี๋ยวนี้</button>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <Card onClick={() => setTab('dept')} className="hover:border-blue-300 cursor-pointer bg-gradient-to-br from-white to-blue-50"><div className="flex justify-between items-start"><div><p className="text-sm text-gray-500 mb-1">ฝ่ายงาน</p><h3 className="text-3xl font-bold text-blue-600">{departments.length}</h3></div><div className="p-3 bg-blue-100 rounded-lg text-blue-600"><Building2 size={24}/></div></div><div className="mt-4 text-xs text-blue-500 flex items-center gap-1 font-medium">จัดการฝ่ายงาน <ArrowRight size={12}/></div></Card>
                     <Card onClick={() => setTab('group')} className="hover:border-orange-300 cursor-pointer bg-gradient-to-br from-white to-orange-50"><div className="flex justify-between items-start"><div><p className="text-sm text-gray-500 mb-1">กลุ่มผู้มีส่วนได้ส่วนเสีย</p><h3 className="text-3xl font-bold text-orange-600">{stakeholderGroups.length}</h3></div><div className="p-3 bg-orange-100 rounded-lg text-orange-600"><Layers size={24}/></div></div><div className="mt-4 text-xs text-orange-500 flex items-center gap-1 font-medium">จัดการกลุ่ม <ArrowRight size={12}/></div></Card>
@@ -289,7 +300,9 @@ const MasterDataView = ({ db, departments, stakeholderGroups, stakeholders, hand
 const UserManagementView = ({ users, departments, handleCreate, handleDelete }) => {
     const [newUser, setNewUser] = useState({ name: '', email: '', role: 'user', deptId: '', status: 'Active' });
     const handleSave = async (e) => { e.preventDefault(); await handleCreate('users', newUser); setNewUser({ name: '', email: '', role: 'user', deptId: '', status: 'Active' }); };
-    return ( <div className="space-y-6"><h2 className="text-2xl font-bold">จัดการผู้ใช้งาน</h2><div className="grid grid-cols-1 md:grid-cols-3 gap-6"><Card><h3 className="font-bold mb-4">เพิ่มผู้ใช้งาน</h3><form onSubmit={handleSave} className="space-y-3"><input className="w-full border p-2 rounded" placeholder="ชื่อ-นามสกุล" value={newUser.name} onChange={e=>setNewUser({...newUser, name: e.target.value})} required/><input className="w-full border p-2 rounded" placeholder="อีเมล" value={newUser.email} onChange={e=>setNewUser({...newUser, email: e.target.value})} required/><select className="w-full border p-2 rounded" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}><option value="user">User</option><option value="executive">Executive</option><option value="admin">Admin</option></select><select className="w-full border p-2 rounded" value={newUser.deptId} onChange={e=>setNewUser({...newUser, deptId: e.target.value})}><option value="">เลือกฝ่ายงาน (ถ้ามี)</option>{departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select><button type="submit" className="w-full bg-orange-500 text-white py-2 rounded">เพิ่มผู้ใช้งาน</button></form></Card><div className="md:col-span-2"><Card><table className="w-full text-sm"><thead><tr><th>ชื่อ</th><th>Role</th><th>ฝ่ายงาน</th><th>Action</th></tr></thead><tbody>{users.map(u=><tr key={u.id} className="border-t"><td className="p-2">{u.name}<br/><span className="text-xs text-gray-400">{u.email}</span></td><td className="p-2 uppercase">{u.role}</td><td className="p-2">{departments.find(d=>String(d.id)===String(u.deptId))?.name || '-'}</td><td className="p-2"><button onClick={()=>handleDelete('users', u.id)} className="text-red-500"><Trash2 size={16}/></button></td></tr>)}</tbody></table></Card></div></div></div> );
+    
+    return (
+        <div className="space-y-6"><h2 className="text-2xl font-bold">จัดการผู้ใช้งาน</h2><div className="grid grid-cols-1 md:grid-cols-3 gap-6"><Card><h3 className="font-bold mb-4">เพิ่มผู้ใช้งาน</h3><form onSubmit={handleSave} className="space-y-3"><input className="w-full border p-2 rounded" placeholder="ชื่อ-นามสกุล" value={newUser.name} onChange={e=>setNewUser({...newUser, name: e.target.value})} required/><input className="w-full border p-2 rounded" placeholder="อีเมล" value={newUser.email} onChange={e=>setNewUser({...newUser, email: e.target.value})} required/><select className="w-full border p-2 rounded" value={newUser.role} onChange={e=>setNewUser({...newUser, role: e.target.value})}><option value="user">User</option><option value="executive">Executive</option><option value="admin">Admin</option></select><select className="w-full border p-2 rounded" value={newUser.deptId} onChange={e=>setNewUser({...newUser, deptId: e.target.value})}><option value="">เลือกฝ่ายงาน (ถ้ามี)</option>{departments.map(d=><option key={d.id} value={d.id}>{d.name}</option>)}</select><button type="submit" className="w-full bg-orange-500 text-white py-2 rounded">เพิ่มผู้ใช้งาน</button></form></Card><div className="md:col-span-2"><Card><table className="w-full text-sm"><thead><tr><th>ชื่อ</th><th>Role</th><th>ฝ่ายงาน</th><th>Action</th></tr></thead><tbody>{users.map(u=><tr key={u.id} className="border-t"><td className="p-2">{u.name}<br/><span className="text-xs text-gray-400">{u.email}</span></td><td className="p-2 uppercase">{u.role}</td><td className="p-2">{departments.find(d=>String(d.id)===String(u.deptId))?.name || '-'}</td><td className="p-2"><button onClick={()=>handleDelete('users', u.id)} className="text-red-500"><Trash2 size={16}/></button></td></tr>)}</tbody></table></Card></div></div></div> );
 };
 
 const UserPlanningView = ({ plans, stakeholders, currentDept, handleCreate, handleDelete }) => {
@@ -309,6 +322,7 @@ const AdminSurveyInput = ({ surveyResults, stakeholders, stakeholderGroups, hand
     const [filterType, setFilterType] = useState('org'); 
     const [isSaving, setIsSaving] = useState(false);
     
+    // Import States
     const [tempImportData, setTempImportData] = useState([]);
     const [importStatus, setImportStatus] = useState('idle');
     const [importLevel, setImportLevel] = useState('org'); // 'org' or 'dept'
@@ -377,12 +391,9 @@ const AdminSurveyInput = ({ surveyResults, stakeholders, stakeholderGroups, hand
                 const line = lines[i].trim();
                 if(!line) continue;
                 const cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/"/g,'').trim());
-                // Basic ID Extraction
                 const idMatch = cols[0].match(/^(\d+(\.\d+)?|TOTAL_ORG)/);
                 if(idMatch && cols.length >= 11) {
                      const id = idMatch[0];
-                     // Simple check: org (integer or single digit ID usually) vs dept (decimal ID)
-                     // Here we just accept valid rows, but could filter based on 'level' prop if IDs follow strict pattern
                      const proc = (v) => { const n = parseFloat(v); return isNaN(n)?0 : (n<=1 && n!==0 ? parseFloat((n*100).toFixed(2)) : parseFloat(n.toFixed(2))); };
                      data.push({ 
                          stakeholderId: id, name: cols[0], 
